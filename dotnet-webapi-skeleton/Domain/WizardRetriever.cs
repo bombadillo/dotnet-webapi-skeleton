@@ -6,8 +6,17 @@
     using Models;
     public class WizardRetriever : IRetrieveWizards
     {
+        private readonly ILog Logger;
+
+        public WizardRetriever(ILog logger)
+        {
+            Logger = logger;
+        }
+
         public List<Wizard> Retrieve()
         {
+            Logger.Info("Retrieving wizards");
+
             return new List<Wizard>()
             {
                 new Wizard
