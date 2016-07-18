@@ -4,7 +4,6 @@
     using Models;
     using System.Collections.Generic;
     using System.Web.Http;
-    using Newtonsoft.Json.Serialization;
 
     public class WizardController : ApiController
     {
