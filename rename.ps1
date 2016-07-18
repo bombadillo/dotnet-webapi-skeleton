@@ -43,6 +43,5 @@ function RenameItems() {
     Rename-Item "$projectSolutionName" "$projectName"
 }
 
-ReplaceOccurrencesInSln
 ProcessFiles $projectFiles
 RenameItems
