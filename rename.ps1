@@ -13,35 +13,52 @@ $defaultProjectName = "DotnetWebApiSkeleton"
 $include = @("*.cs", "*.config", "*.csproj", "*.asax", "*.md", "*.sln")
 $projectFiles = Get-ChildItem '.\*' -Recurse -Include $include -Exclude $exclude | ?{ $_.fullname -notmatch "\\obj\\|\\bin\\?" }
 
-function ReplaceInFile($file) {
+function ReplaceInFile($file, $replace) {
     try {
         $content = Get-Content $file.PSPath
 
         foreach ($stringToReplace in $textToFind) {            
-            $content = $content -Replace $stringToReplace, $projectName
-            Write-Host "Replaced $stringToReplace with $projectName"
+            $content = $content -Replace $stringToReplace, $replace
+            Write-Host "Replaced $stringToReplace with $replace" -foregroundcolor "darkgray"
         }
         
         Set-Content -Path $file.PSPath -Value $content
     }
-    catch [System.Exception] {
-        Write-Host "Unable to replace in file"
+    catch [PSInvalidOperationException]{
+        Write-Host "Unable to replace in file" -foregroundcolor "red"
     }    
 }
 
 function ProcessFiles($files) {    
     foreach ($file in $files) {
-        ReplaceInFile $file
-        Write-Host "Processed file $file"
+        ReplaceInFile $file "$projectName.Api"
+        Write-Host "Processed file $file" -foregroundcolor "green"
     }
 }
 
 function RenameItems() {
     Write-Host 'Start renaming'
-    Rename-Item "$projectSolutionName.sln" "$projectName.sln"
-    Rename-Item "$projectSolutionName\$defaultProjectName.csproj" "$projectName.csproj"
-    Rename-Item "$projectSolutionName" "$projectName"
+
+    try {
+        Rename-Item "$projectSolutionName.sln" "$projectName.sln"
+        Rename-Item "$projectSolutionName\$defaultProjectName.csproj" "$projectName.Api.csproj"
+        Rename-Item "$projectSolutionName" "$projectName.Api"        
+    }
+    catch [System.Exception] {
+        Write-Host "Unable to rename items. Have you already run this script?" -foregroundcolor "red"
+    }    
 }
 
+function ReplaceOccurrencesInSln() {
+    $solutionFile = Get-Item "$projectSolutionName.sln"
+    
+    $content = Get-Content $solutionFile.PSPath
+    $content = $content -Replace 'dotnet-webapi-skeleton', "$projectName.Api"
+    $content = $content -Replace 'DotnetWebApiSkeleton.csproj', "$projectName.Api.csproj"
+    $content = $content -Replace 'DotnetWebApiSkeleton', "$projectName"                   
+    Set-Content -Path $solutionFile.PSPath -Value $content       
+}
+
+ReplaceOccurrencesInSln
 ProcessFiles $projectFiles
 RenameItems
