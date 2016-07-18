@@ -39,14 +39,9 @@ function ProcessFiles($files) {
 function RenameItems() {
     Write-Host 'Start renaming'
 
-    try {
-        Rename-Item "$projectSolutionName.sln" "$projectName.sln"
-        Rename-Item "$projectSolutionName\$defaultProjectName.csproj" "$projectName.Api.csproj"
-        Rename-Item "$projectSolutionName" "$projectName.Api"        
-    }
-    catch [System.Exception] {
-        Write-Host "Unable to rename items. Have you already run this script?" -foregroundcolor "red"
-    }    
+    Rename-Item "$projectSolutionName.sln" "$projectName.sln"
+    Rename-Item "$projectSolutionName\$defaultProjectName.csproj" "$projectName.Api.csproj"
+    Rename-Item "$projectSolutionName" "$projectName.Api"         
 }
 
 function ReplaceOccurrencesInSln() {
@@ -59,6 +54,19 @@ function ReplaceOccurrencesInSln() {
     Set-Content -Path $solutionFile.PSPath -Value $content       
 }
 
-ReplaceOccurrencesInSln
-ProcessFiles $projectFiles
-RenameItems
+function CheckFolderExists() {
+    return (Test-Path $projectSolutionName) 
+}
+
+function AppStart() {
+    if (CheckFolderExists) {
+        Write-Host "Folder found. Starting process" -foregroundcolor "green"
+        ReplaceOccurrencesInSln
+        ProcessFiles $projectFiles
+        RenameItems
+    } else {
+        Write-Host "Unable to process. Have you already run this script?" -foregroundcolor "red"
+    }
+}
+
+AppStart 
